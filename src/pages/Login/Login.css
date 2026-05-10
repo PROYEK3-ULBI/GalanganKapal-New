@@ -1,0 +1,35 @@
+.login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--color-primary); position: relative; overflow: hidden; }
+.login-bg { position: absolute; inset: 0; }
+.login-bg-pattern { position: absolute; inset: 0; background: radial-gradient(circle at 30% 50%, rgba(30,58,138,0.6) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(59,130,246,0.3) 0%, transparent 40%); }
+.login-container { position: relative; z-index: 1; width: 100%; max-width: 420px; padding: var(--space-6); }
+.login-card { background: var(--color-surface); border-radius: var(--radius-2xl); padding: var(--space-10) var(--space-8); box-shadow: var(--shadow-xl); animation: scaleIn 400ms ease; }
+.login-header { text-align: center; margin-bottom: var(--space-8); }
+.login-logo { width: 64px; height: 64px; background: var(--color-primary); color: white; border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4); }
+.login-header h1 { font-size: 28px; font-weight: var(--font-bold); color: var(--color-primary); letter-spacing: -0.03em; }
+.login-header p { font-size: var(--text-sm); color: var(--color-text-muted); margin-top: 4px; }
+.login-form { display: flex; flex-direction: column; gap: var(--space-5); }
+.login-error { background: var(--color-danger-bg); color: var(--color-danger-text); padding: 10px 14px; border-radius: var(--radius-md); font-size: var(--text-sm); border: 1px solid #FECACA; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: var(--text-sm); font-weight: var(--font-medium); color: var(--color-text-secondary); }
+.form-group input { padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: var(--text-base); transition: all var(--transition-fast); }
+.form-group input:focus { border-color: var(--color-info); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.password-input { position: relative; }
+.password-input input { width: 100%; padding-right: 40px; }
+.pwd-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--color-text-muted); cursor: pointer; padding: 4px; }
+.login-btn { display: flex; align-items: center; justify-content: center; gap: var(--space-2); padding: 12px; background: var(--color-primary); color: white; border: none; border-radius: var(--radius-md); font-size: var(--text-base); font-weight: var(--font-semibold); cursor: pointer; transition: all var(--transition-fast); margin-top: var(--space-2); }
+.login-btn:hover:not(:disabled) { background: var(--color-primary-light); }
+.login-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+.login-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; }
+.login-demo { margin-top: var(--space-6); padding-top: var(--space-5); border-top: 1px solid var(--color-border); text-align: center; }
+.login-demo > p:first-child { font-size: 12px; color: var(--color-text-muted); margin-bottom: var(--space-3); }
+.demo-buttons { display: flex; gap: var(--space-2); justify-content: center; }
+.demo-buttons button { padding: 6px 16px; border: 1px solid var(--color-border); border-radius: var(--radius-full); font-size: 12px; font-weight: var(--font-medium); background: var(--color-bg-main); cursor: pointer; transition: all var(--transition-fast); color: var(--color-text-secondary); }
+.demo-buttons button:hover { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-50); }
+.demo-hint { font-size: 11px; color: var(--color-text-disabled); margin-top: var(--space-3); }
+.demo-hint code { background: var(--color-bg-main); padding: 2px 6px; border-radius: var(--radius-sm); font-family: var(--font-mono); }
+
+@media (max-width: 480px) {
+  .login-container { padding: var(--space-4); }
+  .login-card { padding: var(--space-6) var(--space-5); }
+  .login-header h1 { font-size: 24px; }
+}

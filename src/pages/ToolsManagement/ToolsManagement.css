@@ -1,0 +1,23 @@
+.tools-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); }
+.tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-4); }
+.tool-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-5); transition: all var(--transition-base); animation: fadeIn 300ms ease; display: flex; flex-direction: column; gap: var(--space-3); }
+.tool-card:hover { box-shadow: var(--shadow-md); border-color: var(--color-border-hover); }
+.tool-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.tool-icon-wrapper { width: 48px; height: 48px; background: var(--color-primary-50); color: var(--color-primary); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; }
+.tool-name { font-size: var(--text-base); font-weight: var(--font-semibold); color: var(--color-text-primary); }
+.tool-details { display: flex; flex-direction: column; gap: 6px; margin-top: var(--space-1); }
+.tool-detail-row { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--color-text-muted); }
+.tool-detail-row.calib-due { color: var(--color-warning); font-weight: var(--font-medium); }
+.tool-card-action { margin-top: auto; padding-top: var(--space-3); border-top: 1px solid var(--color-border); }
+.tool-card-action .btn { width: 100%; }
+
+@media (max-width: 768px) {
+  .tools-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+  .tools-grid {
+    grid-template-columns: 1fr;
+  }
+}

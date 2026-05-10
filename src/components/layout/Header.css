@@ -1,0 +1,95 @@
+.header {
+  position: fixed; top: 0; right: 0; height: var(--header-height); background: var(--color-surface); border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; padding: 0 var(--space-6); z-index: var(--z-header); left: var(--sidebar-width); transition: left var(--transition-base);
+}
+.sidebar-collapsed ~ .main-wrapper .header,
+.header.collapsed { left: var(--sidebar-collapsed); }
+.header-left { display: flex; align-items: center; gap: var(--space-3); }
+.header-breadcrumb { font-size: var(--text-sm); color: var(--color-text-muted); font-weight: var(--font-medium); }
+.header-center { flex: 1; max-width: 480px; margin: 0 var(--space-6); }
+.header-search { display: flex; align-items: center; gap: var(--space-2); background: var(--color-bg-main); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 8px 14px; color: var(--color-text-muted); transition: border-color var(--transition-fast); }
+.header-search:focus-within { border-color: var(--color-info); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.header-search input { border: none; background: none; flex: 1; font-size: var(--text-sm); color: var(--color-text-primary); }
+.header-search input::placeholder { color: var(--color-text-disabled); }
+.header-right { display: flex; align-items: center; gap: var(--space-3); }
+.header-role-switcher { display: flex; align-items: center; gap: 6px; background: var(--color-primary-50); border: 1px solid var(--color-primary-200); border-radius: var(--radius-md); padding: 4px 10px; color: var(--color-primary); }
+.header-role-switcher select { background: none; border: none; font-size: 12px; font-weight: var(--font-semibold); color: var(--color-primary); cursor: pointer; }
+.header-bell { position: relative; }
+.notif-badge { position: absolute; top: -2px; right: -2px; width: 18px; height: 18px; background: var(--color-danger); color: white; font-size: 10px; font-weight: var(--font-bold); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--color-surface); }
+.header-notif, .header-profile { position: relative; }
+.notif-dropdown { position: absolute; top: calc(100% + 8px); right: 0; width: 360px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); box-shadow: var(--shadow-xl); animation: scaleIn 150ms ease; overflow: hidden; }
+.notif-dropdown-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--color-border); }
+.notif-dropdown-header h4 { font-size: var(--text-sm); font-weight: var(--font-semibold); }
+.notif-dropdown-header span { font-size: 11px; color: var(--color-info); font-weight: var(--font-medium); }
+.notif-item { display: flex; gap: var(--space-3); padding: var(--space-3) var(--space-5); border-bottom: 1px solid var(--color-border); transition: background var(--transition-fast); cursor: pointer; }
+.notif-item:hover { background: var(--color-surface-hover); }
+.notif-item.unread { background: #F0F7FF; }
+.notif-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+.notif-dot.warning { background: var(--color-warning); }
+.notif-dot.danger { background: var(--color-danger); }
+.notif-dot.success { background: var(--color-success); }
+.notif-dot.info { background: var(--color-info); }
+.notif-title { font-size: 13px; font-weight: var(--font-semibold); }
+.notif-message { font-size: 12px; color: var(--color-text-muted); margin-top: 2px; }
+.notif-time { font-size: 11px; color: var(--color-text-disabled); margin-top: 4px; display: block; }
+.header-profile-btn { display: flex; align-items: center; gap: var(--space-2); padding: 4px 8px; border-radius: var(--radius-md); background: none; border: none; cursor: pointer; transition: background var(--transition-fast); }
+.header-profile-btn:hover { background: var(--color-surface-hover); }
+.header-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: var(--font-bold); flex-shrink: 0; }
+.header-avatar.lg { width: 40px; height: 40px; font-size: 14px; }
+.header-username { font-size: 13px; font-weight: var(--font-medium); color: var(--color-text-primary); }
+.profile-dropdown { position: absolute; top: calc(100% + 8px); right: 0; width: 260px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); box-shadow: var(--shadow-xl); animation: scaleIn 150ms ease; overflow: hidden; }
+.profile-dropdown-info { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--color-border); }
+.profile-dropdown-item { display: flex; align-items: center; gap: var(--space-3); padding: 10px var(--space-5); width: 100%; background: none; border: none; font-size: 13px; color: var(--color-text-secondary); cursor: pointer; transition: background var(--transition-fast); }
+.profile-dropdown-item:hover { background: var(--color-surface-hover); }
+.profile-dropdown-item.danger { color: var(--color-danger); }
+.profile-dropdown-item.danger:hover { background: var(--color-danger-bg); }
+
+/* Hamburger — hidden on desktop */
+.mobile-hamburger { display: none; }
+
+/* ============================================================
+   MOBILE RESPONSIVE — Header
+   ============================================================ */
+@media (max-width: 768px) {
+  .header {
+    left: 0 !important;
+    padding: 0 var(--space-4);
+  }
+
+  .mobile-hamburger {
+    display: flex;
+  }
+
+  .header-center {
+    display: none;
+  }
+
+  .header-role-switcher {
+    display: none;
+  }
+
+  .header-username {
+    display: none;
+  }
+
+  .header-breadcrumb {
+    font-size: 13px;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .notif-dropdown {
+    position: fixed;
+    top: var(--header-height);
+    left: var(--space-3);
+    right: var(--space-3);
+    width: auto;
+  }
+
+  .profile-dropdown {
+    position: fixed;
+    top: var(--header-height);
+    right: var(--space-3);
+  }
+}
