@@ -1,4 +1,4 @@
-# ⚓ SIMS — Sistem Manajemen Inventaris Galangan Kapal
+# ⚓ NaviStock — Sistem Manajemen Inventaris Galangan Kapal
 
 > **Shipyard Inventory Management System** — Aplikasi manajemen inventaris terintegrasi untuk operasional galangan kapal, dibangun dengan React + Vite.
 
