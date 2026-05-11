@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ship, Eye, EyeOff, LogIn } from 'lucide-react';
+import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
+// Import logo dengan nama file NaviStock.png
+import logoNaviStock from '../../assets/NaviStock.png';
 import './Login.css';
 
 export default function Login() {
@@ -22,7 +24,11 @@ export default function Login() {
     setTimeout(() => {
       const result = login(email, password);
       if (result.success) {
-        const roleMap = { 'admin@shipyard.co.id': 'admin', 'supervisor@shipyard.co.id': 'supervisor', 'staff@shipyard.co.id': 'staff' };
+        const roleMap = { 
+          'admin@shipyard.co.id': 'admin', 
+          'supervisor@shipyard.co.id': 'supervisor', 
+          'staff@shipyard.co.id': 'staff' 
+        };
         setRole(roleMap[email] || 'staff');
         navigate('/');
       } else {
@@ -45,8 +51,9 @@ export default function Login() {
       <div className="login-container">
         <div className="login-card">
           <div className="login-header">
+            {/* Bagian Logo: Sekarang memanggil logoNaviStock */}
             <div className="login-logo">
-              <Ship size={36} strokeWidth={1.5} />
+              <img src={logoNaviStock} alt="NaviStock Logo" />
             </div>
             <h1>SIMS</h1>
             <p>Sistem Manajemen Inventaris Galangan Kapal</p>

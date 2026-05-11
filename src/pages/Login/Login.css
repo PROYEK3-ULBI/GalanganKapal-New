@@ -4,7 +4,23 @@
 .login-container { position: relative; z-index: 1; width: 100%; max-width: 420px; padding: var(--space-6); }
 .login-card { background: var(--color-surface); border-radius: var(--radius-2xl); padding: var(--space-10) var(--space-8); box-shadow: var(--shadow-xl); animation: scaleIn 400ms ease; }
 .login-header { text-align: center; margin-bottom: var(--space-8); }
-.login-logo { width: 64px; height: 64px; background: var(--color-primary); color: white; border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4); }
+
+/* --- Penyesuaian Logo NaviStock --- */
+.login-logo { 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  margin: 0 auto var(--space-4);
+  width: 100%; /* Memastikan container mengambil lebar penuh untuk centering */
+}
+
+.login-logo img {
+  max-width: 120px; /* Ukuran logo, bisa kamu ubah sesuai selera */
+  height: auto;
+  display: block;
+}
+/* ---------------------------------- */
+
 .login-header h1 { font-size: 28px; font-weight: var(--font-bold); color: var(--color-primary); letter-spacing: -0.03em; }
 .login-header p { font-size: var(--text-sm); color: var(--color-text-muted); margin-top: 4px; }
 .login-form { display: flex; flex-direction: column; gap: var(--space-5); }
@@ -42,3 +58,6 @@
   .login-card { padding: var(--space-6) var(--space-5); }
   .login-header h1 { font-size: 24px; }
 }
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
