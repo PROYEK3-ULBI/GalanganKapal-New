@@ -1,6 +1,6 @@
 # ⚓ NaviStock — Sistem Manajemen Inventaris Galangan Kapal
 
-> **Shipyard Inventory Management System** — Aplikasi manajemen inventaris terintegrasi untuk operasional galangan kapal, dibangun dengan React + Vite.
+> **Navigation/Naval Stock** — Aplikasi manajemen inventaris terintegrasi untuk operasional galangan kapal, dibangun dengan React + Vite.
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)
@@ -10,7 +10,7 @@
 
 ## 📋 Deskripsi
 
-NaviStock(Shipyard Inventory Management System) adalah aplikasi web untuk mengelola seluruh siklus inventaris material di lingkungan galangan kapal. Aplikasi ini mencakup proses penerimaan barang, pengeluaran barang, scrap & retur, penelusuran material, manajemen alat, pengadaan, hingga pelaporan analitik.
+NaviStock (Navigation/Naval Stock) adalah aplikasi web untuk mengelola seluruh siklus inventaris material di lingkungan galangan kapal. Aplikasi ini mencakup proses penerimaan barang, pengeluaran barang, scrap & retur, penelusuran material, manajemen alat, pengadaan, hingga pelaporan analitik.
 
 Seluruh antarmuka pengguna telah **dilokalisasi sepenuhnya ke Bahasa Indonesia** untuk kemudahan penggunaan oleh personel galangan.
 
