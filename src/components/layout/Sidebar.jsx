@@ -1,9 +1,11 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Database, ArrowDownToLine, ArrowUpFromLine, RotateCcw, ScanSearch, Wrench, ShoppingCart, FileBarChart, Settings, HelpCircle, ChevronDown, ChevronRight, Ship, PanelLeftClose, PanelLeft, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, Database, ArrowDownToLine, ArrowUpFromLine, RotateCcw, ScanSearch, Wrench, ShoppingCart, FileBarChart, Settings, HelpCircle, ChevronDown, ChevronRight, PanelLeftClose, PanelLeft, ClipboardList } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import { canShowSidebarItem } from '../../config/permissions';
+// 1. IMPORT LOGO NAVISTOCK
+import logoNaviStock from '../../assets/NaviStock.png';
 import './Sidebar.css';
 
 const allMenuItems = [
@@ -56,7 +58,16 @@ export default function Sidebar() {
     <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${mobileMenuOpen ? 'mobile-open' : ''}`}>
       <div className="sidebar-header">
         <div className="sidebar-logo">
-          <Ship size={28} strokeWidth={1.5} />
+          {/* 2. MENGGANTI ICON SHIP DENGAN TAG IMG */}
+          <img 
+            src={logoNaviStock} 
+            alt="NaviStock Logo" 
+            className="sidebar-img-logo"
+            style={{ 
+              width: sidebarCollapsed ? '32px' : '40px', 
+              transition: 'all 0.3s ease' 
+            }} 
+          />
           {!sidebarCollapsed && (
             <div className="sidebar-brand">
               <h1>SIMS</h1>
