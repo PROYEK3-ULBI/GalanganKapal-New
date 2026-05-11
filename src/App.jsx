@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { hasAccess, PERMISSIONS } from './config/permissions';
 import MainLayout from './components/layout/MainLayout';
 import Login from './pages/Login/Login';
@@ -66,7 +67,9 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <AppProvider>
-          <AppRoutes />
+          <ThemeProvider>
+            <AppRoutes />
+          </ThemeProvider>
         </AppProvider>
       </AuthProvider>
     </BrowserRouter>

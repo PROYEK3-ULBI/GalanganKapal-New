@@ -131,3 +131,78 @@
   --z-modal: 60;
   --z-toast: 70;
 }
+
+/* ============================================
+   Dark Mode Overrides
+   ============================================ */
+
+[data-theme="dark"] {
+  /* ── Brand & Primary Colors ── */
+  --color-primary: #E2E8F0;
+  --color-primary-light: #93C5FD;
+  --color-primary-hover: #60A5FA;
+  --color-primary-50: #1E2130;
+  --color-primary-100: #1E3A5F;
+  --color-primary-200: #1E4080;
+
+  /* ── Surface & Background ── */
+  --color-bg-main: #0F1117;
+  --color-surface: #1E2130;
+  --color-surface-hover: #252839;
+  --color-surface-dim: #2D3148;
+
+  /* ── Border & Dividers ── */
+  --color-border: #2D3148;
+  --color-border-hover: #3D4168;
+  --color-border-focus: #3B82F6;
+
+  /* ── Semantic Status Colors ── */
+  --color-success: #34D399;
+  --color-success-bg: #064E3B;
+  --color-success-text: #6EE7B7;
+
+  --color-warning: #FBBF24;
+  --color-warning-bg: #451A03;
+  --color-warning-text: #FDE68A;
+
+  --color-danger: #F87171;
+  --color-danger-bg: #450A0A;
+  --color-danger-text: #FECACA;
+
+  --color-hazmat: #FB923C;
+  --color-hazmat-bg: #431407;
+  --color-hazmat-text: #FDBA74;
+
+  --color-info: #60A5FA;
+  --color-info-bg: #1E3A5F;
+  --color-info-text: #BFDBFE;
+
+  /* ── Text Colors ── */
+  --color-text-primary: #F1F5F9;
+  --color-text-secondary: #CBD5E1;
+  --color-text-muted: #94A3B8;
+  --color-text-disabled: #475569;
+  --color-text-inverse: #0F172A;
+
+  /* ── SKU & Badge ── */
+  --color-sku-badge: #1E3A5F;
+  --color-sku-text: #93C5FD;
+
+  /* ── Sidebar ── */
+  --sidebar-bg: #080D18;
+  --sidebar-text: #64748B;
+  --sidebar-text-active: #F1F5F9;
+  --sidebar-hover: rgba(255, 255, 255, 0.04);
+  --sidebar-active: rgba(255, 255, 255, 0.08);
+  --sidebar-accent: #60A5FA;
+
+  /* ── Shadows (lebih pekat di dark) ── */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+
+  /* ── Typography, Spacing, Layout, Radius, Transitions, Z-Index ── */
+  /* Tidak perlu dioverride — nilai-nilai ini tidak berubah antara light/dark */
+}

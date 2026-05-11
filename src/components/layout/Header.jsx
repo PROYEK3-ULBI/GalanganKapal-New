@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Search, Bell, ChevronDown, LogOut, User, Shield, Menu } from 'lucide-react';
+import { Search, Bell, ChevronDown, LogOut, User, Shield, Menu, Sun, Moon } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { notifications as notifData } from '../../data/mockData';
 import { PERMISSIONS } from '../../config/permissions';
 import './Header.css';
@@ -37,6 +38,7 @@ export default function Header() {
   const unreadCount = notifData.filter(n => !n.read).length;
   const breadcrumb = breadcrumbMap[location.pathname] || 'Dashboard';
   const roleLabel = PERMISSIONS[role]?.label || role;
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handler = (e) => {
@@ -81,6 +83,13 @@ export default function Header() {
             <option value="staff">Staff</option>
           </select>
         </div>
+        <button className="btn-icon theme-toggle" onClick={toggleTheme} title="Toggle tema">
+    {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+  </button>
+
+  <div className="header-notif" ref={notifRef}>
+    {/* ... kode notif kamu tidak berubah ... */}
+  </div>
 
         <div className="header-notif" ref={notifRef}>
           <button className="btn-icon header-bell" onClick={() => setShowNotif(v => !v)}>
