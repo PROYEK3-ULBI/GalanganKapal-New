@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import { canShowSidebarItem } from '../../config/permissions';
-// 1. IMPORT LOGO NAVISTOCK
 import logoNaviStock from '../../assets/NaviStock.png';
 import './Sidebar.css';
 
@@ -36,14 +35,12 @@ export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Close mobile menu on navigation
   const handleMobileClose = () => {
     if (window.innerWidth <= 768) {
       setMobileMenuOpen(false);
     }
   };
 
-  // Filter menu items based on role permissions
   const menuItems = useMemo(() => allMenuItems.filter(item => canShowSidebarItem(role, item.label)), [role]);
   const bottomItems = useMemo(() => allBottomItems.filter(item => canShowSidebarItem(role, item.label)), [role]);
 
@@ -58,19 +55,15 @@ export default function Sidebar() {
     <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${mobileMenuOpen ? 'mobile-open' : ''}`}>
       <div className="sidebar-header">
         <div className="sidebar-logo">
-          {/* 2. MENGGANTI ICON SHIP DENGAN TAG IMG */}
           <img 
             src={logoNaviStock} 
             alt="NaviStock Logo" 
             className="sidebar-img-logo"
-            style={{ 
-              width: sidebarCollapsed ? '32px' : '40px', 
-              transition: 'all 0.3s ease' 
-            }} 
           />
           {!sidebarCollapsed && (
             <div className="sidebar-brand">
-              <h1>SIMS</h1>
+              {/* Teks diubah dari SIMS menjadi NaviStock */}
+              <h1>NaviStock</h1>
               <span>Inventaris Galangan</span>
             </div>
           )}
