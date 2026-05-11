@@ -10,7 +10,7 @@
 
 ## 📋 Deskripsi
 
-SIMS (Shipyard Inventory Management System) adalah aplikasi web untuk mengelola seluruh siklus inventaris material di lingkungan galangan kapal. Aplikasi ini mencakup proses penerimaan barang, pengeluaran barang, scrap & retur, penelusuran material, manajemen alat, pengadaan, hingga pelaporan analitik.
+NaviStock(Shipyard Inventory Management System) adalah aplikasi web untuk mengelola seluruh siklus inventaris material di lingkungan galangan kapal. Aplikasi ini mencakup proses penerimaan barang, pengeluaran barang, scrap & retur, penelusuran material, manajemen alat, pengadaan, hingga pelaporan analitik.
 
 Seluruh antarmuka pengguna telah **dilokalisasi sepenuhnya ke Bahasa Indonesia** untuk kemudahan penggunaan oleh personel galangan.
 
