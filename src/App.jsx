@@ -1,8 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { hasAccess, PERMISSIONS } from './config/permissions';
+import { hasAccess } from './config/permissions';
 import MainLayout from './components/layout/MainLayout';
 import Login from './pages/Login/Login';
 import Dashboard from './pages/Dashboard/Dashboard';
@@ -22,7 +22,8 @@ import AccessDenied from './pages/AccessDenied';
 import './styles/global.css';
 
 function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, bootstrapping } = useAuth();
+  if (bootstrapping) return null;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   return children;
 }
@@ -36,7 +37,9 @@ function RoleGuard({ children, requiredRoute }) {
 }
 
 function AppRoutes() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, bootstrapping } = useAuth();
+
+  if (bootstrapping) return null;
 
   return (
     <Routes>

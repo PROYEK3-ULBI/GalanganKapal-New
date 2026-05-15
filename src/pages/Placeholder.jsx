@@ -1,7 +1,7 @@
 import { ShoppingCart, FileBarChart, Settings, HelpCircle, Construction } from 'lucide-react';
 import Card from '../components/ui/Card';
 
-function PlaceholderPage({ icon: Icon, title, subtitle }) {
+function PlaceholderPage({ title, subtitle }) {
   return (
     <div>
       <div className="page-header">

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
-// Import logo dengan nama file NaviStock.png
 import logoNaviStock from '../../assets/NaviStock.png';
 import './Login.css';
 
@@ -17,29 +16,26 @@ export default function Login() {
   const { setRole } = useApp();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    setTimeout(() => {
-      const result = login(email, password);
+    try {
+      const result = await login(email, password);
       if (result.success) {
-        const roleMap = { 
-          'admin@shipyard.co.id': 'admin', 
-          'supervisor@shipyard.co.id': 'supervisor', 
-          'staff@shipyard.co.id': 'staff' 
-        };
-        setRole(roleMap[email] || 'staff');
+        // Sync the role into AppContext for sidebar/RBAC display.
+        if (result.user?.role) setRole(result.user.role);
         navigate('/');
       } else {
-        setError(result.error);
+        setError(result.error || 'Email atau kata sandi salah');
       }
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
-  const quickLogin = (email) => {
-    setEmail(email);
+  const quickLogin = (demoEmail) => {
+    setEmail(demoEmail);
     setPassword('admin123');
   };
 
@@ -51,7 +47,6 @@ export default function Login() {
       <div className="login-container">
         <div className="login-card">
           <div className="login-header">
-            {/* Bagian Logo: Sekarang memanggil logoNaviStock */}
             <div className="login-logo">
               <img src={logoNaviStock} alt="NaviStock Logo" />
             </div>
@@ -63,12 +58,12 @@ export default function Login() {
             {error && <div className="login-error">{error}</div>}
             <div className="form-group">
               <label>Alamat Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Masukkan email Anda" required />
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Masukkan email Anda" required autoComplete="email" />
             </div>
             <div className="form-group">
               <label>Kata Sandi</label>
               <div className="password-input">
-                <input type={showPwd ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="Masukkan kata sandi" required />
+                <input type={showPwd ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="Masukkan kata sandi" required autoComplete="current-password" />
                 <button type="button" className="pwd-toggle" onClick={() => setShowPwd(v => !v)}>
                   {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>

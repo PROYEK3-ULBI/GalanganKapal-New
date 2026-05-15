@@ -2,7 +2,6 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Database, ArrowDownToLine, ArrowUpFromLine, RotateCcw, ScanSearch, Wrench, ShoppingCart, FileBarChart, Settings, HelpCircle, ChevronDown, ChevronRight, PanelLeftClose, PanelLeft, ClipboardList } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
-import { useNavigate } from 'react-router-dom';
 import { canShowSidebarItem } from '../../config/permissions';
 import logoNaviStock from '../../assets/NaviStock.png';
 import './Sidebar.css';
@@ -33,7 +32,6 @@ export default function Sidebar() {
   const { sidebarCollapsed, setSidebarCollapsed, role, mobileMenuOpen, setMobileMenuOpen } = useApp();
   const [expandedMenu, setExpandedMenu] = useState('Operasi Inventaris');
   const location = useLocation();
-  const navigate = useNavigate();
 
   const handleMobileClose = () => {
     if (window.innerWidth <= 768) {

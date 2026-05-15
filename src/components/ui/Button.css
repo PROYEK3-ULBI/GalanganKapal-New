@@ -78,3 +78,12 @@
   background: var(--color-surface-hover);
   color: var(--color-text-primary);
 }
+
+/* Dark Mode — Primary button fix */
+[data-theme="dark"] .btn-primary {
+  background: #3B82F6;
+  color: #FFFFFF;
+}
+[data-theme="dark"] .btn-primary:hover:not(:disabled) {
+  background: #2563EB;
+}

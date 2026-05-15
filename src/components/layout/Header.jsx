@@ -25,7 +25,7 @@ const breadcrumbMap = {
 };
 
 export default function Header() {
-  const { role, setRole, addToast, mobileMenuOpen, setMobileMenuOpen } = useApp();
+  const { role, setRole, addToast, setMobileMenuOpen } = useApp();
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -37,7 +37,6 @@ export default function Header() {
 
   const unreadCount = notifData.filter(n => !n.read).length;
   const breadcrumb = breadcrumbMap[location.pathname] || 'Dashboard';
-  const roleLabel = PERMISSIONS[role]?.label || role;
   const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {

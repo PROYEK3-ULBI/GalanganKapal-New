@@ -1,6 +1,6 @@
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
-import { Users, AlertTriangle, Shield, DollarSign, ClipboardCheck, Package, Ship as ShipIcon, Activity, UserCheck, AlertCircle, ArrowDownToLine, ArrowUpFromLine, RotateCcw, Eye, Edit, Trash2, Check, X, CheckCircle, XCircle } from 'lucide-react';
+import { Users, Shield, DollarSign, ClipboardCheck, Package, Ship as ShipIcon, AlertCircle, ArrowDownToLine, ArrowUpFromLine, RotateCcw, Eye, Edit, Check, X, CheckCircle, XCircle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import StatCard from '../../components/ui/StatCard';
 import Card from '../../components/ui/Card';
@@ -35,7 +35,7 @@ function AdminDashboard() {
       </button>
     )},
     { header: 'Login Terakhir', accessor: 'lastLogin' },
-    { header: 'Aksi', sortable: false, render: (r) => (
+    { header: 'Aksi', sortable: false, render: () => (
       <div style={{ display: 'flex', gap: 4 }}>
         <button className="btn-icon"><Eye size={15} /></button>
         <button className="btn-icon"><Edit size={15} /></button>

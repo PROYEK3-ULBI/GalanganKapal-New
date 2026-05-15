@@ -59,5 +59,41 @@
   .login-header h1 { font-size: 24px; }
 }
 
+/* ============================================================
+   Dark Mode — Login Page Overrides
+   ============================================================ */
+[data-theme="dark"] .login-page {
+  background: #0B1120;
+}
+
+[data-theme="dark"] .login-bg-pattern {
+  background: radial-gradient(circle at 30% 50%, rgba(59,130,246,0.15) 0%, transparent 50%),
+              radial-gradient(circle at 70% 80%, rgba(96,165,250,0.1) 0%, transparent 40%);
+}
+
+[data-theme="dark"] .login-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+[data-theme="dark"] .login-header h1 {
+  color: #F1F5F9;
+}
+
+[data-theme="dark"] .login-btn {
+  background: #3B82F6;
+  color: #FFFFFF;
+}
+
+[data-theme="dark"] .login-btn:hover:not(:disabled) {
+  background: #2563EB;
+}
+
+[data-theme="dark"] .login-error {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+  border-color: var(--color-danger);
+}
+
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }

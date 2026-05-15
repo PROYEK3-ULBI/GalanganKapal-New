@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, User, Lock, Bell, Warehouse, Save, Eye, EyeOff } from 'lucide-react';
+import { User, Lock, Bell, Warehouse, Save, Eye, EyeOff } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';

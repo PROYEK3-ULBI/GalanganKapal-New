@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Eye, Edit, Trash2, AlertTriangle, Filter } from 'lucide-react';
 import Card from '../../components/ui/Card';
@@ -6,32 +6,81 @@ import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal';
-import { materials as initialMaterials, categories } from '../../data/mockData';
+import { materialsApi } from '../../lib/api/materials';
+import { ApiError } from '../../lib/apiClient';
 import { useApp } from '../../context/AppContext';
 import { canEditModule, canDelete as canDeleteCheck } from '../../config/permissions';
 import './MasterData.css';
 
+const ALL_CATEGORIES = 'All Categories';
+
 export default function MasterMaterialCatalog() {
-  const [data, setData] = useState(initialMaterials);
-  const [categoryFilter, setCategoryFilter] = useState('All Categories');
+  const [materials, setMaterials] = useState([]);
+  const [categories, setCategories] = useState([ALL_CATEGORIES]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState(ALL_CATEGORIES);
   const [hazmatOnly, setHazmatOnly] = useState(false);
   const [deleteModal, setDeleteModal] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [viewModal, setViewModal] = useState(null);
   const { addToast, role } = useApp();
   const navigate = useNavigate();
   const canEdit = canEditModule(role, 'master-data');
   const canDel = canDeleteCheck(role);
 
-  const filtered = data.filter(m => {
-    if (categoryFilter !== 'All Categories' && m.category !== categoryFilter) return false;
-    if (hazmatOnly && !m.hazmat) return false;
-    return true;
-  });
+  // Reload materials whenever filters change.
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchMaterials() {
+      setLoading(true);
+      setLoadError('');
+      try {
+        const res = await materialsApi.list({
+          category: categoryFilter === ALL_CATEGORIES ? undefined : categoryFilter,
+          hazmat: hazmatOnly,
+        });
+        if (!cancelled) setMaterials(res?.data ?? []);
+      } catch (err) {
+        if (cancelled) return;
+        const msg = err instanceof ApiError ? err.message : 'Gagal memuat data material';
+        setLoadError(msg);
+        setMaterials([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    fetchMaterials();
+    return () => { cancelled = true; };
+  }, [categoryFilter, hazmatOnly]);
 
-  const handleDelete = () => {
-    setData(prev => prev.filter(m => m.id !== deleteModal.id));
-    addToast(`${deleteModal.name} telah dihapus`, 'success');
-    setDeleteModal(null);
+  // Fetch category list once on mount.
+  useEffect(() => {
+    let cancelled = false;
+    materialsApi.categories()
+      .then(res => {
+        if (cancelled) return;
+        const cats = res?.data ?? [];
+        setCategories([ALL_CATEGORIES, ...cats]);
+      })
+      .catch(() => { /* fall back to default */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleDelete = async () => {
+    if (!deleteModal) return;
+    setDeleting(true);
+    try {
+      await materialsApi.remove(deleteModal.id);
+      setMaterials(prev => prev.filter(m => m.id !== deleteModal.id));
+      addToast(`${deleteModal.name} telah dihapus`, 'success');
+      setDeleteModal(null);
+    } catch (err) {
+      const msg = err instanceof ApiError ? err.message : 'Gagal menghapus material';
+      addToast(msg, 'error');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const columns = [
@@ -58,6 +107,12 @@ export default function MasterMaterialCatalog() {
     )},
   ];
 
+  const emptyMessage = loading
+    ? 'Memuat data...'
+    : loadError
+      ? loadError
+      : 'Tidak ada material yang sesuai dengan filter';
+
   return (
     <>
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -79,11 +134,27 @@ export default function MasterMaterialCatalog() {
             <span>Hanya HAZMAT</span>
           </label>
         </div>
-        <DataTable columns={columns} data={filtered} searchPlaceholder="Cari berdasarkan SKU, nama, atau kategori..." pageSize={10} />
+        <DataTable
+          columns={columns}
+          data={materials}
+          searchPlaceholder="Cari berdasarkan SKU, nama, atau kategori..."
+          pageSize={10}
+          emptyMessage={emptyMessage}
+        />
       </Card>
 
-      <Modal isOpen={!!deleteModal} onClose={() => setDeleteModal(null)} title="Konfirmasi Hapus" size="sm"
-        footer={<><Button variant="secondary" onClick={() => setDeleteModal(null)}>Batal</Button><Button variant="danger" onClick={handleDelete}>Hapus</Button></>}>
+      <Modal
+        isOpen={!!deleteModal}
+        onClose={() => !deleting && setDeleteModal(null)}
+        title="Konfirmasi Hapus"
+        size="sm"
+        footer={(
+          <>
+            <Button variant="secondary" onClick={() => setDeleteModal(null)} disabled={deleting}>Batal</Button>
+            <Button variant="danger" onClick={handleDelete} disabled={deleting}>{deleting ? 'Menghapus...' : 'Hapus'}</Button>
+          </>
+        )}
+      >
         <p>Apakah Anda yakin ingin menghapus <strong>{deleteModal?.name}</strong>?</p>
         <p className="text-sm text-muted" style={{ marginTop: 8 }}>Tindakan ini tidak dapat dibatalkan.</p>
       </Modal>
@@ -99,11 +170,11 @@ export default function MasterMaterialCatalog() {
               <div className="detail-field"><label>Stok Saat Ini</label><span className="font-medium">{viewModal.stock}</span></div>
               <div className="detail-field"><label>Stok Min</label><span>{viewModal.minStock}</span></div>
               <div className="detail-field"><label>Titik Reorder</label><span>{viewModal.reorderPoint}</span></div>
-              <div className="detail-field"><label>Lokasi</label><span>{viewModal.location}</span></div>
+              <div className="detail-field"><label>Lokasi</label><span>{viewModal.location || '—'}</span></div>
               <div className="detail-field"><label>Nomor Heat</label><span className="font-mono">{viewModal.heatNumber || '—'}</span></div>
               <div className="detail-field"><label>HAZMAT</label>{viewModal.hazmat ? <Badge variant="hazmat">HAZMAT</Badge> : <span>Tidak</span>}</div>
               <div className="detail-field"><label>Status</label><Badge variant={viewModal.status === 'In Stock' ? 'success' : viewModal.status === 'Low Stock' ? 'warning' : 'danger'}>{viewModal.status}</Badge></div>
-              <div className="detail-field"><label>Harga</label><span>Rp {viewModal.price?.toLocaleString()}</span></div>
+              <div className="detail-field"><label>Harga</label><span>Rp {viewModal.price?.toLocaleString('id-ID')}</span></div>
             </div>
           </div>
         )}

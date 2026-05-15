@@ -1,13 +1,24 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { approvals as initialApprovals } from '../data/mockData';
+import { useAuth } from './AuthContext';
 
 const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
+  const { user, isAuthenticated } = useAuth();
   const [role, setRole] = useState('admin');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toasts, setToasts] = useState([]);
+
+  // Keep role in sync with the authenticated user. The role switcher in the
+  // header still works for demos by overriding this until the next login/logout.
+  useEffect(() => {
+    if (isAuthenticated && user?.role) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRole(user.role);
+    }
+  }, [isAuthenticated, user?.role]);
 
   // Shared request/approval state — Staff submits, Supervisor approves
   const [requests, setRequests] = useState(initialApprovals);

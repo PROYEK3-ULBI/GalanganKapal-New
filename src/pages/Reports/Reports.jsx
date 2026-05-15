@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { FileBarChart, Download, TrendingUp, Package, DollarSign, BarChart3, PieChart as PieIcon } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import StatCard from '../../components/ui/StatCard';
 import DataTable from '../../components/ui/DataTable';
-import { materials, transactions, projects, chartData } from '../../data/mockData';
+import { materials, transactions, projects } from '../../data/mockData';
 import { useApp } from '../../context/AppContext';
 import './Reports.css';
 
