@@ -1,5 +1,4 @@
 import { useApp } from '../../context/AppContext';
-import { useAuth } from '../../context/AuthContext';
 import { Users, Shield, DollarSign, ClipboardCheck, Package, Ship as ShipIcon, AlertCircle, ArrowDownToLine, ArrowUpFromLine, RotateCcw, Eye, Edit, Check, X, CheckCircle, XCircle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import StatCard from '../../components/ui/StatCard';
@@ -7,38 +6,98 @@ import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
-import { users, transactions, activityLog, chartData } from '../../data/mockData';
-import { useState } from 'react';
+import Modal from '../../components/ui/Modal';
+import { transactions, activityLog, chartData } from '../../data/mockData';
+import { materialRequestsApi } from '../../lib/api/materialRequests';
+import { usersApi } from '../../lib/api/users';
+import { ApiError } from '../../lib/apiClient';
+import { useCallback, useEffect, useState } from 'react';
 import './Dashboard.css';
 
 function AdminDashboard() {
-  const [userData, setUserData] = useState(users);
   const { addToast } = useApp();
+  const [userData, setUserData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [actingId, setActingId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
-  const toggleStatus = (id) => {
-    setUserData(prev => prev.map(u => u.id === id ? { ...u, status: u.status === 'active' ? 'inactive' : 'active' } : u));
-    addToast('User status updated', 'success');
+  const refresh = useCallback(async () => {
+    try {
+      const res = await usersApi.list();
+      setUserData(res?.data ?? []);
+    } catch (err) {
+      addToast(err instanceof ApiError ? err.message : 'Gagal memuat user', 'error');
+    }
+  }, [addToast]);
+
+  useEffect(() => {
+    let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    refresh().finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [refresh]);
+
+  const toggleStatus = async (user) => {
+    if (actingId) return;
+    setActingId(user.id);
+    try {
+      await usersApi.toggleStatus(user.id);
+      addToast(`Status ${user.name} diperbarui`, 'success');
+      await refresh();
+    } catch (err) {
+      addToast(err instanceof ApiError ? err.message : 'Gagal mengubah status', 'error');
+    } finally {
+      setActingId(null);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget || deleting) return;
+    setDeleting(true);
+    try {
+      await usersApi.remove(deleteTarget.id);
+      addToast(`${deleteTarget.name} dihapus`, 'success');
+      setDeleteTarget(null);
+      await refresh();
+    } catch (err) {
+      addToast(err instanceof ApiError ? err.message : 'Gagal menghapus user', 'error');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const userColumns = [
     { header: 'Nama', accessor: 'name', render: (r) => (
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div className="header-avatar" style={{ width: 28, height: 28, fontSize: 10 }}>{r.avatar}</div>
+        <div className="header-avatar" style={{ width: 28, height: 28, fontSize: 10 }}>{r.avatar || r.name?.split(' ').map(s => s[0]).slice(0, 2).join('')}</div>
         <div><div style={{ fontWeight: 500 }}>{r.name}</div><div className="text-xs text-muted">{r.email}</div></div>
       </div>
     )},
     { header: 'Peran', accessor: 'role', render: (r) => <Badge variant={r.role === 'admin' ? 'info' : r.role === 'supervisor' ? 'warning' : 'default'}>{r.role}</Badge> },
-    { header: 'Departemen', accessor: 'department' },
+    { header: 'Departemen', accessor: 'department', render: (r) => r.department || '—' },
     { header: 'Status', accessor: 'status', render: (r) => (
-      <button className={`status-toggle ${r.status}`} onClick={() => toggleStatus(r.id)}>
+      <button
+        className={`status-toggle ${r.status}`}
+        onClick={() => toggleStatus(r)}
+        disabled={actingId === r.id}
+      >
         <span className="status-toggle-dot" />{r.status}
       </button>
     )},
-    { header: 'Login Terakhir', accessor: 'lastLogin' },
-    { header: 'Aksi', sortable: false, render: () => (
+    { header: 'Login Terakhir', accessor: 'lastLoginAt', render: (r) => r.lastLoginAt ? new Date(r.lastLoginAt).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '—' },
+    { header: 'Aksi', sortable: false, render: (r) => (
       <div style={{ display: 'flex', gap: 4 }}>
-        <button className="btn-icon"><Eye size={15} /></button>
-        <button className="btn-icon"><Edit size={15} /></button>
+        <button className="btn-icon" title="Lihat detail"><Eye size={15} /></button>
+        <button className="btn-icon" title="Edit"><Edit size={15} /></button>
+        <button
+          className="btn-icon"
+          title="Hapus"
+          style={{ color: 'var(--color-danger)' }}
+          onClick={() => setDeleteTarget(r)}
+        >
+          <X size={15} />
+        </button>
       </div>
     )},
   ];
@@ -52,7 +111,13 @@ function AdminDashboard() {
         <StatCard icon={Shield} label="Persetujuan Peran Tertunda" value="12" color="warning" trendLabel="Memerlukan tindakan" />
       </div>
       <Card title="Manajemen Pengguna" subtitle="Kelola pengguna dan peran sistem" noPadding>
-        <DataTable columns={userColumns} data={userData} searchPlaceholder="Cari pengguna..." pageSize={5} />
+        <DataTable
+          columns={userColumns}
+          data={userData}
+          searchPlaceholder="Cari pengguna..."
+          pageSize={10}
+          emptyMessage={loading ? 'Memuat pengguna...' : 'Tidak ada pengguna'}
+        />
       </Card>
       <Card title="Log Aktivitas Sistem" subtitle="Kegiatan sistem terbaru" className="mt-6">
         <div className="activity-log">
@@ -67,33 +132,85 @@ function AdminDashboard() {
           ))}
         </div>
       </Card>
+
+      <Modal
+        isOpen={!!deleteTarget}
+        onClose={() => !deleting && setDeleteTarget(null)}
+        title="Konfirmasi Hapus Pengguna"
+        size="sm"
+        footer={(
+          <>
+            <Button variant="secondary" onClick={() => setDeleteTarget(null)} disabled={deleting}>Batal</Button>
+            <Button variant="danger" onClick={handleDelete} disabled={deleting}>
+              {deleting ? 'Menghapus...' : 'Hapus'}
+            </Button>
+          </>
+        )}
+      >
+        <p>Apakah Anda yakin ingin menghapus <strong>{deleteTarget?.name}</strong> ({deleteTarget?.email})?</p>
+        <p className="text-sm text-muted" style={{ marginTop: 8 }}>Pengguna yang sudah pernah membuat permintaan atau transaksi tidak dapat dihapus untuk menjaga audit trail.</p>
+      </Modal>
     </>
   );
 }
 
 function SupervisorDashboard() {
   const [timeRange, setTimeRange] = useState('7D');
-  const { addToast, requests, updateRequestStatus } = useApp();
-  const { user } = useAuth();
+  const { addToast } = useApp();
+  const [requests, setRequests] = useState([]);
+  const [actingId, setActingId] = useState(null); // id currently being approved/rejected
+
+  // Load all material requests on mount and after every action.
+  const refresh = useCallback(async () => {
+    try {
+      const res = await materialRequestsApi.list();
+      setRequests(res?.data ?? []);
+    } catch (err) {
+      addToast(err instanceof ApiError ? err.message : 'Gagal memuat permintaan', 'error');
+    }
+  }, [addToast]);
+
+  useEffect(() => {
+    // Dispatching the network request from inside the effect intentionally;
+    // the eslint rule wants us to avoid setState in effects but here the state
+    // update happens asynchronously after the response.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    refresh();
+  }, [refresh]);
 
   const pendingRequests = requests.filter(r => r.status === 'pending');
   const recentApproved = requests.filter(r => r.status === 'approved' || r.status === 'rejected').slice(0, 5);
 
-  const handleApproval = (id, action) => {
-    updateRequestStatus(id, action === 'approve' ? 'approved' : 'rejected', user?.name || 'Supervisor');
-    addToast(`Request ${action === 'approve' ? 'approved ✅' : 'rejected ❌'}`, action === 'approve' ? 'success' : 'warning');
+  const handleApproval = async (id, action) => {
+    if (actingId) return;
+    setActingId(id);
+    try {
+      if (action === 'approve') {
+        await materialRequestsApi.approve(id);
+        addToast('Request disetujui', 'success');
+      } else {
+        await materialRequestsApi.reject(id);
+        addToast('Request ditolak', 'warning');
+      }
+      await refresh();
+    } catch (err) {
+      const msg = err instanceof ApiError ? err.message : 'Gagal memproses request';
+      addToast(msg, 'error');
+    } finally {
+      setActingId(null);
+    }
   };
 
   const approvalColumns = [
+    { header: 'No. Request', accessor: 'requestNo', render: (r) => <span className="font-mono text-xs">{r.requestNo}</span> },
     { header: 'Tipe', accessor: 'type', render: (r) => <Badge variant={r.type === 'Purchase Request' ? 'info' : r.type === 'Material Request' ? 'warning' : 'default'}>{r.type}</Badge> },
-    { header: 'Judul', accessor: 'title', render: (r) => <span style={{ fontWeight: 500, maxWidth: 250, display: 'inline-block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span> },
     { header: 'Pemohon', accessor: 'requester' },
     { header: 'Tanggal', accessor: 'date' },
     { header: 'Prioritas', accessor: 'priority', render: (r) => <Badge variant={r.priority === 'high' ? 'danger' : r.priority === 'medium' ? 'warning' : 'default'}>{r.priority}</Badge> },
     { header: 'Aksi', sortable: false, render: (r) => (
       <div style={{ display: 'flex', gap: 4 }}>
-        <Button variant="success" size="sm" icon={Check} onClick={() => handleApproval(r.id, 'approve')}>Setujui</Button>
-        <Button variant="danger" size="sm" icon={X} onClick={() => handleApproval(r.id, 'reject')}>Tolak</Button>
+        <Button variant="success" size="sm" icon={Check} onClick={() => handleApproval(r.id, 'approve')} disabled={actingId === r.id}>Setujui</Button>
+        <Button variant="danger" size="sm" icon={X} onClick={() => handleApproval(r.id, 'reject')} disabled={actingId === r.id}>Tolak</Button>
       </div>
     )},
   ];
@@ -146,10 +263,13 @@ function SupervisorDashboard() {
               <div key={r.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 20px', borderBottom: '1px solid var(--color-border)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   {r.status === 'approved' ? <CheckCircle size={16} color="#10B981" /> : <XCircle size={16} color="#EF4444" />}
-                  <span style={{ fontSize: 13, fontWeight: 500 }}>{r.title}</span>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 500 }}>{r.requestNo} — {r.type}</div>
+                    <div className="text-xs text-muted">oleh {r.requester} {r.project ? `• ${r.project}` : ''}</div>
+                  </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span className="text-xs text-muted">{r.approvedDate || r.date}</span>
+                  <span className="text-xs text-muted">{r.date}</span>
                   <Badge variant={r.status === 'approved' ? 'success' : 'danger'}>{r.status}</Badge>
                 </div>
               </div>

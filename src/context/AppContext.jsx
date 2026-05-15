@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { approvals as initialApprovals } from '../data/mockData';
 import { useAuth } from './AuthContext';
 
 const AppContext = createContext(null);
@@ -20,26 +19,6 @@ export function AppProvider({ children }) {
     }
   }, [isAuthenticated, user?.role]);
 
-  // Shared request/approval state — Staff submits, Supervisor approves
-  const [requests, setRequests] = useState(initialApprovals);
-
-  const addRequest = useCallback((request) => {
-    const newReq = {
-      id: `REQ-${String(Date.now()).slice(-4)}`,
-      ...request,
-      date: new Date().toISOString().split('T')[0],
-      status: 'pending',
-    };
-    setRequests(prev => [newReq, ...prev]);
-    return newReq;
-  }, []);
-
-  const updateRequestStatus = useCallback((id, status, approver) => {
-    setRequests(prev => prev.map(r =>
-      r.id === id ? { ...r, status, approvedBy: approver, approvedDate: new Date().toISOString().split('T')[0] } : r
-    ));
-  }, []);
-
   const addToast = useCallback((message, type = 'success') => {
     const id = Date.now();
     setToasts(prev => [...prev, { id, message, type }]);
@@ -58,7 +37,6 @@ export function AppProvider({ children }) {
       sidebarCollapsed, setSidebarCollapsed,
       mobileMenuOpen, setMobileMenuOpen,
       toasts, addToast, removeToast,
-      requests, addRequest, updateRequestStatus
     }}>
       {children}
     </AppContext.Provider>

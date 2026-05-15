@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Search, Bell, ChevronDown, LogOut, User, Shield, Menu, Sun, Moon } from 'lucide-react';
+import { Search, Bell, ChevronDown, LogOut, User, Shield, Menu, Sun, Moon, Check } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { notifications as notifData } from '../../data/mockData';
+import { notificationsApi } from '../../lib/api/notifications';
+import { ApiError } from '../../lib/apiClient';
 import { PERMISSIONS } from '../../config/permissions';
 import './Header.css';
 
@@ -24,21 +25,69 @@ const breadcrumbMap = {
   '/support': 'Bantuan & Dukungan',
 };
 
+const NOTIF_POLL_INTERVAL_MS = 30_000; // 30s polling for unread badge
+
+// Format an ISO timestamp as a short relative time in Indonesian.
+function formatRelativeTime(iso) {
+  if (!iso) return '';
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return '';
+  const diff = Math.floor((Date.now() - then) / 1000);
+  if (diff < 60) return 'baru saja';
+  if (diff < 3600) return `${Math.floor(diff / 60)} mnt lalu`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} jam lalu`;
+  if (diff < 7 * 86400) return `${Math.floor(diff / 86400)} hari lalu`;
+  return new Date(iso).toLocaleDateString('id-ID');
+}
+
 export default function Header() {
   const { role, setRole, addToast, setMobileMenuOpen } = useApp();
-  const { user, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [showNotif, setShowNotif] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [searchVal, setSearchVal] = useState('');
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const notifRef = useRef(null);
   const profileRef = useRef(null);
 
-  const unreadCount = notifData.filter(n => !n.read).length;
   const breadcrumb = breadcrumbMap[location.pathname] || 'Dashboard';
   const { theme, toggleTheme } = useTheme();
 
+  // Refresh both list and unread count.
+  const refresh = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const [list, stats] = await Promise.all([
+        notificationsApi.list({ limit: 20 }),
+        notificationsApi.stats(),
+      ]);
+      setNotifications(list?.data ?? []);
+      setUnreadCount(stats?.unread ?? 0);
+    } catch (err) {
+      // Silent on auth errors (handled globally); other failures are non-fatal here.
+      if (!(err instanceof ApiError && err.status === 401)) {
+        // do nothing
+      }
+    }
+  }, [isAuthenticated]);
+
+  // Initial load + polling.
+  useEffect(() => {
+    if (!isAuthenticated) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setNotifications([]);
+      setUnreadCount(0);
+      return undefined;
+    }
+    refresh();
+    const id = setInterval(refresh, NOTIF_POLL_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [isAuthenticated, refresh]);
+
+  // Click-outside to close dropdowns.
   useEffect(() => {
     const handler = (e) => {
       if (notifRef.current && !notifRef.current.contains(e.target)) setShowNotif(false);
@@ -57,6 +106,27 @@ export default function Header() {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleNotifClick = async (notif) => {
+    if (!notif.read) {
+      try {
+        await notificationsApi.markRead(notif.id);
+      } catch { /* non-fatal */ }
+    }
+    setShowNotif(false);
+    if (notif.link) navigate(notif.link);
+    refresh();
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await notificationsApi.markAllRead();
+      addToast('Semua notifikasi ditandai dibaca', 'success');
+      refresh();
+    } catch (err) {
+      addToast(err instanceof ApiError ? err.message : 'Gagal menandai notifikasi', 'error');
+    }
   };
 
   return (
@@ -93,17 +163,44 @@ export default function Header() {
           </button>
           {showNotif && (
             <div className="notif-dropdown">
-              <div className="notif-dropdown-header"><h4>Notifikasi</h4><span>{unreadCount} belum dibaca</span></div>
-              {notifData.map(n => (
-                <div key={n.id} className={`notif-item ${!n.read ? 'unread' : ''}`}>
-                  <div className={`notif-dot ${n.type}`} />
-                  <div className="notif-content">
-                    <p className="notif-title">{n.title}</p>
-                    <p className="notif-message">{n.message}</p>
-                    <span className="notif-time">{n.time}</span>
-                  </div>
+              <div className="notif-dropdown-header">
+                <h4>Notifikasi</h4>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span>{unreadCount} belum dibaca</span>
+                  {unreadCount > 0 && (
+                    <button
+                      className="btn-icon"
+                      title="Tandai semua dibaca"
+                      onClick={handleMarkAllRead}
+                      style={{ padding: 4 }}
+                    >
+                      <Check size={14} />
+                    </button>
+                  )}
                 </div>
-              ))}
+              </div>
+              {notifications.length === 0 ? (
+                <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 13 }}>
+                  Belum ada notifikasi
+                </div>
+              ) : (
+                notifications.map(n => (
+                  <button
+                    type="button"
+                    key={n.id}
+                    className={`notif-item ${!n.read ? 'unread' : ''}`}
+                    onClick={() => handleNotifClick(n)}
+                    style={{ width: '100%', textAlign: 'left', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                  >
+                    <div className={`notif-dot ${n.type}`} />
+                    <div className="notif-content">
+                      <p className="notif-title">{n.title}</p>
+                      <p className="notif-message">{n.message}</p>
+                      <span className="notif-time">{formatRelativeTime(n.createdAt)}</span>
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
           )}
         </div>
