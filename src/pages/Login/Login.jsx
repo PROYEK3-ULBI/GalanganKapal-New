@@ -55,7 +55,7 @@ export default function Login() {
             <div className="login-logo">
               <img src={logoNaviStock} alt="NaviStock Logo" />
             </div>
-            <h1>SIMS</h1>
+            <h1>NaviStock</h1>
             <p>Sistem Manajemen Inventaris Galangan Kapal</p>
           </div>
 

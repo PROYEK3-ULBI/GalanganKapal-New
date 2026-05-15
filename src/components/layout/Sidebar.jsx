@@ -60,13 +60,6 @@ export default function Sidebar() {
             alt="NaviStock Logo" 
             className="sidebar-img-logo"
           />
-          {!sidebarCollapsed && (
-            <div className="sidebar-brand">
-              {/* Teks diubah dari SIMS menjadi NaviStock */}
-              <h1>NaviStock</h1>
-              <span>Inventaris Galangan</span>
-            </div>
-          )}
         </div>
         <button className="sidebar-toggle" onClick={() => setSidebarCollapsed(v => !v)}>
           {sidebarCollapsed ? <PanelLeft size={18} /> : <PanelLeftClose size={18} />}

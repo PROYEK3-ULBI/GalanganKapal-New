@@ -84,12 +84,8 @@ export default function Header() {
           </select>
         </div>
         <button className="btn-icon theme-toggle" onClick={toggleTheme} title="Toggle tema">
-    {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
-  </button>
-
-  <div className="header-notif" ref={notifRef}>
-    {/* ... kode notif kamu tidak berubah ... */}
-  </div>
+          {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+        </button>
 
         <div className="header-notif" ref={notifRef}>
           <button className="btn-icon header-bell" onClick={() => setShowNotif(v => !v)}>

@@ -26,6 +26,7 @@ body {
   color: var(--color-text-primary);
   background-color: var(--color-bg-main);
   min-height: 100vh;
+  transition: background-color var(--transition-slow), color var(--transition-slow);
 }
 /* ── Theme Transition ── */
 *,
@@ -170,4 +171,13 @@ table { border-collapse: collapse; width: 100%; }
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ── Dark Mode specific overrides ── */
+[data-theme="dark"] .notif-item.unread {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+[data-theme="dark"] .page-title {
+  color: var(--color-text-primary);
 }
