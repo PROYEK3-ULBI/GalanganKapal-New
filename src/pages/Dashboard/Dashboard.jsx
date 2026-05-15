@@ -7,9 +7,10 @@ import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal';
-import { transactions, activityLog, chartData } from '../../data/mockData';
+import { transactions, chartData } from '../../data/mockData';
 import { materialRequestsApi } from '../../lib/api/materialRequests';
 import { usersApi } from '../../lib/api/users';
+import { activityLogApi } from '../../lib/api/activityLog';
 import { ApiError } from '../../lib/apiClient';
 import { useCallback, useEffect, useState } from 'react';
 import './Dashboard.css';
@@ -17,6 +18,7 @@ import './Dashboard.css';
 function AdminDashboard() {
   const { addToast } = useApp();
   const [userData, setUserData] = useState([]);
+  const [activityEntries, setActivityEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actingId, setActingId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -24,10 +26,14 @@ function AdminDashboard() {
 
   const refresh = useCallback(async () => {
     try {
-      const res = await usersApi.list();
-      setUserData(res?.data ?? []);
+      const [usersRes, activityRes] = await Promise.all([
+        usersApi.list(),
+        activityLogApi.list({ limit: 15 }),
+      ]);
+      setUserData(usersRes?.data ?? []);
+      setActivityEntries(activityRes?.data ?? []);
     } catch (err) {
-      addToast(err instanceof ApiError ? err.message : 'Gagal memuat user', 'error');
+      addToast(err instanceof ApiError ? err.message : 'Gagal memuat data', 'error');
     }
   }, [addToast]);
 
@@ -121,15 +127,24 @@ function AdminDashboard() {
       </Card>
       <Card title="Log Aktivitas Sistem" subtitle="Kegiatan sistem terbaru" className="mt-6">
         <div className="activity-log">
-          {activityLog.map(a => (
-            <div key={a.id} className="activity-item">
-              <div className={`status-dot ${a.type}`} />
-              <div className="activity-content">
-                <div className="activity-header"><span className="font-medium">{a.action}</span><span className="text-xs text-muted">{a.time}</span></div>
-                <p className="text-xs text-muted">{a.detail} — by {a.user}</p>
-              </div>
+          {activityEntries.length === 0 ? (
+            <div className="text-muted" style={{ padding: 24, textAlign: 'center' }}>
+              {loading ? 'Memuat...' : 'Belum ada aktivitas tercatat'}
             </div>
-          ))}
+          ) : (
+            activityEntries.map(a => (
+              <div key={a.id} className="activity-item">
+                <div className={`status-dot ${a.type}`} />
+                <div className="activity-content">
+                  <div className="activity-header">
+                    <span className="font-medium">{a.action}</span>
+                    <span className="text-xs text-muted">{new Date(a.time).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                  </div>
+                  <p className="text-xs text-muted">{a.detail}{a.user ? ` — by ${a.user}` : ''}</p>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </Card>
 
