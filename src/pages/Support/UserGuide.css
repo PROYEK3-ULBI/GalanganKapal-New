@@ -1,0 +1,117 @@
+.user-guide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.user-guide-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.user-guide-content {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--color-text);
+  max-width: 880px;
+}
+
+.user-guide-content h1 {
+  font-size: 24px;
+  font-weight: var(--font-bold);
+  margin: 0 0 var(--space-4);
+}
+
+.user-guide-content h2 {
+  font-size: 18px;
+  font-weight: var(--font-semibold);
+  margin: var(--space-6) 0 var(--space-3);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.user-guide-content h3 {
+  font-size: 16px;
+  font-weight: var(--font-semibold);
+  margin: var(--space-5) 0 var(--space-2);
+}
+
+.user-guide-content p {
+  margin: var(--space-3) 0;
+}
+
+.user-guide-content ul,
+.user-guide-content ol {
+  padding-left: var(--space-6);
+  margin: var(--space-3) 0;
+}
+
+.user-guide-content li {
+  margin: 4px 0;
+}
+
+.user-guide-content code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--color-surface-hover);
+}
+
+.user-guide-content pre {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-hover);
+  overflow-x: auto;
+  margin: var(--space-3) 0;
+}
+
+.user-guide-content pre code {
+  padding: 0;
+  background: transparent;
+}
+
+.user-guide-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-3) 0;
+  font-size: 13px;
+}
+
+.user-guide-content th,
+.user-guide-content td {
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.user-guide-content th {
+  background: var(--color-surface-hover);
+  font-weight: var(--font-semibold);
+}
+
+.user-guide-content a {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.user-guide-content blockquote {
+  margin: var(--space-3) 0;
+  padding: var(--space-2) var(--space-4);
+  border-left: 3px solid var(--color-primary);
+  background: var(--color-surface-hover);
+  border-radius: var(--radius-sm);
+}
+
+.user-guide-content strong {
+  font-weight: var(--font-semibold);
+}

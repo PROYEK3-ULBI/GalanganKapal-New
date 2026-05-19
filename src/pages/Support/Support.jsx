@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { HelpCircle, Book, MessageCircle, ChevronDown, ChevronUp, Search, Mail, Phone, ExternalLink, Ship, Clock, CheckCircle } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -22,12 +23,12 @@ const faqData = [
 ];
 
 const guides = [
-  { title: 'Panduan Admin', desc: 'Manajemen user, master data, dan konfigurasi sistem', role: 'Admin' },
-  { title: 'Panduan Supervisor', desc: 'Approval workflow, monitoring KPI, dan laporan', role: 'Supervisor' },
-  { title: 'Panduan Staff', desc: 'Goods receipt/issue, material request, dan tools', role: 'Staff' },
-  { title: 'Panduan Traceability', desc: 'Pelacakan heat number dan sertifikasi material', role: 'All' },
-  { title: 'Panduan Procurement', desc: 'Purchase request, PO tracking, dan vendor management', role: 'Admin' },
-  { title: 'Panduan Inventory', desc: 'Stok, minimum stock, reorder point, dan stock opname', role: 'All' },
+  { title: 'Panduan Admin', slug: 'admin', desc: 'Manajemen user, master data, dan konfigurasi sistem', role: 'Admin' },
+  { title: 'Panduan Supervisor', slug: 'supervisor', desc: 'Approval workflow, monitoring KPI, dan laporan', role: 'Supervisor' },
+  { title: 'Panduan Staff', slug: 'staff', desc: 'Goods receipt/issue, material request, dan tools', role: 'Staff' },
+  { title: 'Panduan Traceability', slug: 'traceability', desc: 'Pelacakan heat number dan sertifikasi material', role: 'All' },
+  { title: 'Panduan Procurement', slug: 'procurement', desc: 'Purchase request, PO tracking, dan vendor management', role: 'Admin' },
+  { title: 'Panduan Inventory', slug: 'inventory', desc: 'Stok, minimum stock, reorder point, dan stock opname', role: 'All' },
 ];
 
 const PRIORITY_LABELS = { low: 'Rendah', medium: 'Sedang', high: 'Tinggi' };
@@ -50,6 +51,7 @@ function priorityVariant(p) {
 
 export default function Support() {
   const { addToast } = useApp();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedFaq, setExpandedFaq] = useState(null);
   const [contactForm, setContactForm] = useState({ subject: '', message: '', priority: 'medium' });
@@ -181,7 +183,7 @@ export default function Support() {
           <Card title="Panduan Pengguna" subtitle="Panduan penggunaan sistem">
             <div className="guide-list">
               {guides.map((g, i) => (
-                <button key={i} className="guide-item" onClick={() => addToast(`Panduan ${g.title} belum tersedia`, 'info')}>
+                <button key={i} className="guide-item" onClick={() => navigate(`/support/docs/${g.slug}`)}>
                   <Book size={16} />
                   <div>
                     <div className="guide-title">{g.title}</div>

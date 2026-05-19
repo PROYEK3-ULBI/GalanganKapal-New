@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -20,6 +21,10 @@ import SettingsPage from './pages/Settings/Settings';
 import Support from './pages/Support/Support';
 import AccessDenied from './pages/AccessDenied';
 import './styles/global.css';
+
+// Lazy-loaded — pulls in react-markdown and remark-gfm only when a user
+// actually opens a guide page.
+const UserGuide = lazy(() => import('./pages/Support/UserGuide'));
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated, bootstrapping } = useAuth();
@@ -59,6 +64,13 @@ function AppRoutes() {
         <Route path="reports" element={<RoleGuard requiredRoute="/reports"><Reports /></RoleGuard>} />
         <Route path="settings" element={<RoleGuard requiredRoute="/settings"><SettingsPage /></RoleGuard>} />
         <Route path="support" element={<RoleGuard requiredRoute="/support"><Support /></RoleGuard>} />
+        <Route path="support/docs/:slug" element={
+          <RoleGuard requiredRoute="/support/docs/:slug">
+            <Suspense fallback={<div style={{ padding: 24 }}>Memuat panduan...</div>}>
+              <UserGuide />
+            </Suspense>
+          </RoleGuard>
+        } />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

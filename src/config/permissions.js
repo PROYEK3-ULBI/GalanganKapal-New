@@ -6,7 +6,8 @@ export const PERMISSIONS = {
       '/', '/master-data', '/master-data/new', '/master-data/:id/edit',
       '/inventory/goods-receipt', '/inventory/goods-issue', '/inventory/scrap-return',
       '/material-request',
-      '/traceability', '/tools', '/procurement', '/reports', '/settings', '/support'
+      '/traceability', '/tools', '/procurement', '/reports', '/settings', '/support',
+      '/support/docs/:slug'
     ],
     sidebarItems: ['Dashboard', 'Data Master', 'Operasi Inventaris', 'Permintaan Material', 'Penelusuran', 'Manajemen Alat', 'Pengadaan', 'Laporan', 'Pengaturan', 'Bantuan'],
     canEdit: ['master-data', 'users', 'settings', 'tools', 'inventory'],
@@ -19,7 +20,8 @@ export const PERMISSIONS = {
       '/', '/master-data',
       '/inventory/goods-receipt', '/inventory/goods-issue', '/inventory/scrap-return',
       '/material-request',
-      '/traceability', '/tools', '/procurement', '/reports', '/settings', '/support'
+      '/traceability', '/tools', '/procurement', '/reports', '/settings', '/support',
+      '/support/docs/:slug'
     ],
     sidebarItems: ['Dashboard', 'Data Master', 'Operasi Inventaris', 'Permintaan Material', 'Penelusuran', 'Manajemen Alat', 'Pengadaan', 'Laporan', 'Pengaturan', 'Bantuan'],
     canEdit: ['inventory'],
@@ -32,7 +34,8 @@ export const PERMISSIONS = {
       '/',
       '/inventory/goods-receipt', '/inventory/goods-issue', '/inventory/scrap-return',
       '/material-request',
-      '/traceability', '/tools', '/settings', '/support'
+      '/traceability', '/tools', '/settings', '/support',
+      '/support/docs/:slug'
     ],
     sidebarItems: ['Dashboard', 'Operasi Inventaris', 'Permintaan Material', 'Penelusuran', 'Manajemen Alat', 'Pengaturan', 'Bantuan'],
     canEdit: ['inventory', 'tools'],

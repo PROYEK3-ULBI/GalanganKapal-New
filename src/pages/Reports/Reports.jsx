@@ -10,6 +10,7 @@ import { reportsApi } from '../../lib/api/reports';
 import { transactionsApi } from '../../lib/api/transactions';
 import { ApiError } from '../../lib/apiClient';
 import { useApp } from '../../context/AppContext';
+import { exportTabAsPDF, exportTabAsExcel } from './exportHelpers';
 import './Reports.css';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
@@ -41,6 +42,7 @@ export default function Reports() {
   const [recentTx, setRecentTx] = useState([]);
   const [projectConsumption, setProjectConsumption] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -89,8 +91,29 @@ export default function Reports() {
     )},
   ];
 
-  const handleExport = (format) => {
-    addToast(`Ekspor ${format} belum tersedia`, 'warning');
+  const handleExport = async (format) => {
+    if (exporting || loading) return;
+    setExporting(true);
+    const payload = {
+      stockValuation,
+      categories,
+      txSummary,
+      recentTx,
+      projectConsumption,
+    };
+    try {
+      if (format === 'PDF') {
+        await exportTabAsPDF(activeReport, payload, addToast);
+      } else {
+        await exportTabAsExcel(activeReport, payload, addToast);
+      }
+    } catch (err) {
+      // Helper already toasts a friendly message; this catch prevents
+      // unhandled promise rejections from leaking to the console.
+      console.error('Export failed:', err);
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
@@ -101,8 +124,8 @@ export default function Reports() {
           <p className="page-subtitle">Valuasi inventaris, analitik konsumsi, dan laporan operasional</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <Button variant="secondary" icon={Download} onClick={() => handleExport('PDF')}>Ekspor PDF</Button>
-          <Button variant="secondary" icon={Download} onClick={() => handleExport('Excel')}>Ekspor Excel</Button>
+          <Button variant="secondary" icon={Download} disabled={loading || exporting} onClick={() => handleExport('PDF')}>Ekspor PDF</Button>
+          <Button variant="secondary" icon={Download} disabled={loading || exporting} onClick={() => handleExport('Excel')}>Ekspor Excel</Button>
         </div>
       </div>
 
