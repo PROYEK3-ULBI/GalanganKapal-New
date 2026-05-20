@@ -15,7 +15,7 @@ import { canApprove } from '../../config/permissions';
 import './Procurement.css';
 
 export default function Procurement() {
-  const { addToast, role } = useApp();
+  const { addToast, role, globalSearch, setGlobalSearch } = useApp();
   const canMutate = canApprove(role); // admin & supervisor can create POs
 
   const [activeTab, setActiveTab] = useState('orders');
@@ -231,6 +231,8 @@ export default function Procurement() {
             data={purchaseOrders}
             searchPlaceholder="Cari nomor PO atau vendor..."
             emptyMessage={emptyMessage}
+            searchTerm={globalSearch}
+            onSearchChange={setGlobalSearch}
           />
         </Card>
       )}
@@ -242,6 +244,8 @@ export default function Procurement() {
             data={vendors}
             searchPlaceholder="Cari vendor..."
             emptyMessage={emptyMessage}
+            searchTerm={globalSearch}
+            onSearchChange={setGlobalSearch}
           />
         </Card>
       )}

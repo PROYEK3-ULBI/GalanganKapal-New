@@ -2,11 +2,22 @@ import { useState, useMemo } from 'react';
 import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import './DataTable.css';
 
-export default function DataTable({ columns, data, searchable = true, searchPlaceholder = 'Cari...', pageSize = 10, onRowClick, emptyMessage = 'Data tidak ditemukan' }) {
-  const [search, setSearch] = useState('');
+export default function DataTable({ columns, data, searchable = true, searchPlaceholder = 'Cari...', pageSize = 10, onRowClick, emptyMessage = 'Data tidak ditemukan', searchTerm, onSearchChange }) {
+  const [internalSearch, setInternalSearch] = useState('');
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState('asc');
   const [page, setPage] = useState(1);
+
+  // Controlled vs internal search-state. When the parent passes
+  // `searchTerm` (string), DataTable becomes a controlled input that
+  // notifies via `onSearchChange`. Otherwise it manages its own state.
+  const isControlled = typeof searchTerm === 'string';
+  const search = isControlled ? searchTerm : internalSearch;
+  const updateSearch = (val) => {
+    setPage(1);
+    if (isControlled) onSearchChange?.(val);
+    else setInternalSearch(val);
+  };
 
   const filtered = useMemo(() => {
     if (!search) return data;
@@ -55,7 +66,7 @@ export default function DataTable({ columns, data, searchable = true, searchPlac
               type="text"
               placeholder={searchPlaceholder}
               value={search}
-              onChange={e => { setSearch(e.target.value); setPage(1); }}
+              onChange={e => updateSearch(e.target.value)}
             />
           </div>
           <span className="data-table-count">{filtered.length} item</span>

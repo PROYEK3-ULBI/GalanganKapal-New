@@ -24,7 +24,7 @@ export default function MasterMaterialCatalog() {
   const [deleteModal, setDeleteModal] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [viewModal, setViewModal] = useState(null);
-  const { addToast, role } = useApp();
+  const { addToast, role, globalSearch, setGlobalSearch } = useApp();
   const navigate = useNavigate();
   const canEdit = canEditModule(role, 'master-data');
   const canDel = canDeleteCheck(role);
@@ -140,6 +140,8 @@ export default function MasterMaterialCatalog() {
           searchPlaceholder="Cari berdasarkan SKU, nama, atau kategori..."
           pageSize={10}
           emptyMessage={emptyMessage}
+          searchTerm={globalSearch}
+          onSearchChange={setGlobalSearch}
         />
       </Card>
 

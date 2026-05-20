@@ -9,6 +9,9 @@ export function AppProvider({ children }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toasts, setToasts] = useState([]);
+  // Shared search query that the header input writes into and that
+  // opt-in pages may forward to their DataTable as the controlled value.
+  const [globalSearch, setGlobalSearch] = useState('');
 
   // Keep role in sync with the authenticated user. The role switcher in the
   // header still works for demos by overriding this until the next login/logout.
@@ -37,6 +40,7 @@ export function AppProvider({ children }) {
       sidebarCollapsed, setSidebarCollapsed,
       mobileMenuOpen, setMobileMenuOpen,
       toasts, addToast, removeToast,
+      globalSearch, setGlobalSearch,
     }}>
       {children}
     </AppContext.Provider>

@@ -31,7 +31,7 @@ const TYPE_FILL = {
 };
 
 export default function Reports() {
-  const { addToast } = useApp();
+  const { addToast, globalSearch, setGlobalSearch } = useApp();
   const [activeReport, setActiveReport] = useState('stock-summary');
 
   // Data state for each report.
@@ -184,6 +184,8 @@ export default function Reports() {
             searchPlaceholder="Cari material..."
             pageSize={8}
             emptyMessage={loading ? 'Memuat data...' : 'Tidak ada data'}
+            searchTerm={globalSearch}
+            onSearchChange={setGlobalSearch}
           />
         </Card>
       )}

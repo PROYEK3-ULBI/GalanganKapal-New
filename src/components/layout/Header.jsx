@@ -41,13 +41,12 @@ function formatRelativeTime(iso) {
 }
 
 export default function Header() {
-  const { role, setRole, addToast, setMobileMenuOpen } = useApp();
+  const { role, setRole, addToast, setMobileMenuOpen, globalSearch, setGlobalSearch } = useApp();
   const { user, isAuthenticated, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [showNotif, setShowNotif] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
-  const [searchVal, setSearchVal] = useState('');
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const notifRef = useRef(null);
@@ -55,6 +54,12 @@ export default function Header() {
 
   const breadcrumb = breadcrumbMap[location.pathname] || 'Dashboard';
   const { theme, toggleTheme } = useTheme();
+
+  // Clear the shared search query whenever the user navigates to a new page
+  // so leftover queries do not silently filter the next page.
+  useEffect(() => {
+    setGlobalSearch('');
+  }, [location.pathname, setGlobalSearch]);
 
   // Refresh both list and unread count.
   const refresh = useCallback(async () => {
@@ -140,7 +145,7 @@ export default function Header() {
       <div className="header-center">
         <div className="header-search">
           <Search size={16} />
-          <input placeholder="Cari SKU, material, nomor heat..." value={searchVal} onChange={e => setSearchVal(e.target.value)} />
+          <input placeholder="Cari SKU, material, nomor heat..." value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} />
         </div>
       </div>
       <div className="header-right">
