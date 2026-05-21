@@ -108,6 +108,10 @@ export default function MaterialForm() {
     if (submitting) return;
 
     const numOrUndef = (v) => (v === '' || v === null || v === undefined ? undefined : Number(v));
+    // For optional string fields: in edit mode kirim empty string supaya backend
+    // bisa meng-clear kolom; di create mode, undefined supaya dianggap belum diset.
+    const trimmedLocation = form.location.trim();
+    const trimmedSpecs = form.specifications.trim();
     const payload = {
       name: form.name.trim(),
       category: form.category,
@@ -117,8 +121,8 @@ export default function MaterialForm() {
       reorderPoint: numOrUndef(form.reorderPoint),
       price: numOrUndef(form.price),
       hazmat: form.hazmat,
-      location: form.location.trim() || undefined,
-      specifications: form.specifications.trim() || undefined,
+      location: isEdit ? trimmedLocation : (trimmedLocation || undefined),
+      specifications: isEdit ? trimmedSpecs : (trimmedSpecs || undefined),
     };
     if (!isEdit) payload.sku = form.sku.trim();
 

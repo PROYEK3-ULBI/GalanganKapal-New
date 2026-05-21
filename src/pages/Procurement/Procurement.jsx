@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ShoppingCart, Package, CheckCircle, Clock, Eye, Plus, Building2 } from 'lucide-react';
+import { ShoppingCart, Package, CheckCircle, Clock, Eye, Plus, Building2, Edit2, Trash2 } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
@@ -31,6 +31,15 @@ export default function Procurement() {
   const [skuSearch, setSkuSearch] = useState('');
   const [submittingPR, setSubmittingPR] = useState(false);
 
+  // Vendor CRUD state.
+  const emptyVendorForm = { name: '', contact: '', phone: '', email: '', address: '', status: 'active' };
+  const [vendorForm, setVendorForm] = useState(emptyVendorForm);
+  const [vendorEditId, setVendorEditId] = useState(null);
+  const [showVendorForm, setShowVendorForm] = useState(false);
+  const [savingVendor, setSavingVendor] = useState(false);
+  const [vendorToDelete, setVendorToDelete] = useState(null);
+  const [deletingVendor, setDeletingVendor] = useState(false);
+
   // Initial load: vendors + POs in parallel.
   useEffect(() => {
     let cancelled = false;
@@ -38,7 +47,9 @@ export default function Procurement() {
       try {
         const [poRes, venRes] = await Promise.all([
           purchaseOrdersApi.list(),
-          vendorsApi.list({ activeOnly: true }),
+          // Admin/supervisor see all vendors (including inactive) to manage them.
+          // Other roles only see active vendors for PO creation purposes.
+          vendorsApi.list(canMutate ? {} : { activeOnly: true }),
         ]);
         if (cancelled) return;
         setPurchaseOrders(poRes?.data ?? []);
@@ -52,7 +63,7 @@ export default function Procurement() {
     }
     load();
     return () => { cancelled = true; };
-  }, []);
+  }, [canMutate]);
 
   // Lazy-load materials only when the New PR modal opens for the first time.
   useEffect(() => {
@@ -77,6 +88,89 @@ export default function Procurement() {
       setPurchaseOrders(res?.data ?? []);
     } catch {
       // keep previous data
+    }
+  };
+
+  const refreshVendors = async () => {
+    try {
+      const res = await vendorsApi.list(canMutate ? {} : { activeOnly: true });
+      setVendors(res?.data ?? []);
+    } catch {
+      // keep previous data
+    }
+  };
+
+  // Vendor form handlers.
+  const openCreateVendor = () => {
+    setVendorForm(emptyVendorForm);
+    setVendorEditId(null);
+    setShowVendorForm(true);
+  };
+
+  const openEditVendor = (v) => {
+    setVendorForm({
+      name: v.name ?? '',
+      contact: v.contact ?? '',
+      phone: v.phone ?? '',
+      email: v.email ?? '',
+      address: v.address ?? '',
+      status: v.status ?? 'active',
+    });
+    setVendorEditId(v.id);
+    setShowVendorForm(true);
+  };
+
+  const closeVendorForm = () => {
+    if (savingVendor) return;
+    setShowVendorForm(false);
+    setVendorForm(emptyVendorForm);
+    setVendorEditId(null);
+  };
+
+  const submitVendor = async () => {
+    const name = vendorForm.name.trim();
+    if (!name) return addToast('Nama vendor wajib diisi', 'error');
+    setSavingVendor(true);
+    try {
+      const payload = {
+        name,
+        contact: vendorForm.contact.trim() || undefined,
+        phone: vendorForm.phone.trim() || undefined,
+        email: vendorForm.email.trim() || undefined,
+        address: vendorForm.address.trim() || undefined,
+        status: vendorForm.status,
+      };
+      if (vendorEditId) {
+        await vendorsApi.update(vendorEditId, payload);
+        addToast('Vendor berhasil diperbarui', 'success');
+      } else {
+        await vendorsApi.create(payload);
+        addToast('Vendor berhasil ditambahkan', 'success');
+      }
+      closeVendorForm();
+      await refreshVendors();
+    } catch (err) {
+      const msg = err instanceof ApiError ? err.message : 'Gagal menyimpan vendor';
+      addToast(msg, 'error');
+    } finally {
+      setSavingVendor(false);
+    }
+  };
+
+  const confirmDeleteVendor = async () => {
+    if (!vendorToDelete) return;
+    setDeletingVendor(true);
+    try {
+      await vendorsApi.remove(vendorToDelete.id);
+      addToast('Vendor berhasil dihapus', 'success');
+      setVendorToDelete(null);
+      await refreshVendors();
+    } catch (err) {
+      // Backend returns 409 when vendor is referenced by PO/transactions.
+      const msg = err instanceof ApiError ? err.message : 'Gagal menghapus vendor';
+      addToast(msg, 'error');
+    } finally {
+      setDeletingVendor(false);
     }
   };
 
@@ -125,6 +219,14 @@ export default function Procurement() {
         {r.status === 'active' ? 'Aktif' : 'Nonaktif'}
       </Badge>
     )},
+    ...(canMutate ? [{
+      header: 'Aksi', sortable: false, render: r => (
+        <div style={{ display: 'flex', gap: 4 }}>
+          <button className="btn-icon" onClick={() => openEditVendor(r)} title="Ubah Vendor"><Edit2 size={16} /></button>
+          <button className="btn-icon" onClick={() => setVendorToDelete(r)} title="Hapus Vendor"><Trash2 size={16} /></button>
+        </div>
+      ),
+    }] : []),
   ];
 
   // PR creation handlers.
@@ -238,16 +340,23 @@ export default function Procurement() {
       )}
 
       {activeTab === 'vendors' && (
-        <Card noPadding>
-          <DataTable
-            columns={vendorColumns}
-            data={vendors}
-            searchPlaceholder="Cari vendor..."
-            emptyMessage={emptyMessage}
-            searchTerm={globalSearch}
-            onSearchChange={setGlobalSearch}
-          />
-        </Card>
+        <>
+          {canMutate && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+              <Button variant="primary" icon={Plus} onClick={openCreateVendor}>Tambah Vendor</Button>
+            </div>
+          )}
+          <Card noPadding>
+            <DataTable
+              columns={vendorColumns}
+              data={vendors}
+              searchPlaceholder="Cari vendor..."
+              emptyMessage={emptyMessage}
+              searchTerm={globalSearch}
+              onSearchChange={setGlobalSearch}
+            />
+          </Card>
+        </>
       )}
 
       {/* PO Detail Modal */}
@@ -378,6 +487,108 @@ export default function Procurement() {
             />
           </div>
         </div>
+      </Modal>
+
+      {/* Vendor Form Modal (create / edit) */}
+      <Modal
+        isOpen={showVendorForm}
+        onClose={closeVendorForm}
+        title={vendorEditId ? 'Ubah Vendor' : 'Tambah Vendor Baru'}
+        size="md"
+        footer={(
+          <>
+            <Button variant="secondary" onClick={closeVendorForm} disabled={savingVendor}>Batal</Button>
+            <Button variant="primary" onClick={submitVendor} disabled={savingVendor}>
+              {savingVendor ? 'Menyimpan...' : vendorEditId ? 'Simpan Perubahan' : 'Simpan Vendor'}
+            </Button>
+          </>
+        )}
+      >
+        <div className="request-form">
+          <div className="form-grid">
+            <div className="form-group">
+              <label>Nama Perusahaan <span className="required">*</span></label>
+              <input
+                type="text"
+                value={vendorForm.name}
+                onChange={e => setVendorForm(f => ({ ...f, name: e.target.value }))}
+                placeholder="PT Contoh Sentosa"
+              />
+            </div>
+            <div className="form-group">
+              <label>Kontak Person</label>
+              <input
+                type="text"
+                value={vendorForm.contact}
+                onChange={e => setVendorForm(f => ({ ...f, contact: e.target.value }))}
+                placeholder="Nama kontak utama"
+              />
+            </div>
+            <div className="form-group">
+              <label>Telepon</label>
+              <input
+                type="text"
+                value={vendorForm.phone}
+                onChange={e => setVendorForm(f => ({ ...f, phone: e.target.value }))}
+                placeholder="021-1234567"
+              />
+            </div>
+            <div className="form-group">
+              <label>Email</label>
+              <input
+                type="email"
+                value={vendorForm.email}
+                onChange={e => setVendorForm(f => ({ ...f, email: e.target.value }))}
+                placeholder="contact@vendor.co.id"
+              />
+            </div>
+            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+              <label>Alamat</label>
+              <textarea
+                value={vendorForm.address}
+                onChange={e => setVendorForm(f => ({ ...f, address: e.target.value }))}
+                rows={2}
+                placeholder="Alamat lengkap vendor"
+                style={{ width: '100%', padding: '10px 14px', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', fontFamily: 'inherit', resize: 'vertical' }}
+              />
+            </div>
+            <div className="form-group">
+              <label>Status</label>
+              <select
+                value={vendorForm.status}
+                onChange={e => setVendorForm(f => ({ ...f, status: e.target.value }))}
+              >
+                <option value="active">Aktif</option>
+                <option value="inactive">Nonaktif</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Vendor Delete Confirmation */}
+      <Modal
+        isOpen={!!vendorToDelete}
+        onClose={() => !deletingVendor && setVendorToDelete(null)}
+        title="Hapus Vendor"
+        size="sm"
+        footer={(
+          <>
+            <Button variant="secondary" onClick={() => setVendorToDelete(null)} disabled={deletingVendor}>Batal</Button>
+            <Button variant="danger" onClick={confirmDeleteVendor} disabled={deletingVendor}>
+              {deletingVendor ? 'Menghapus...' : 'Hapus'}
+            </Button>
+          </>
+        )}
+      >
+        {vendorToDelete && (
+          <div>
+            <p>Hapus vendor <strong>{vendorToDelete.name}</strong>?</p>
+            <p className="text-xs text-muted" style={{ marginTop: 8 }}>
+              Vendor tidak bisa dihapus jika masih punya purchase order atau transaksi terkait.
+            </p>
+          </div>
+        )}
       </Modal>
     </>
   );

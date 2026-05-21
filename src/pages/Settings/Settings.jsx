@@ -60,9 +60,10 @@ export default function SettingsPage() {
       position: user.position || '',
     });
     // Default notification toggles when prefs are empty.
+    // Backend treats unset keys as opt-in (TRUE), so the UI mirrors that.
     const prefs = user.notificationPreferences || {};
     setNotifSettings(NOTIF_OPTIONS.reduce((acc, opt) => {
-      acc[opt.key] = prefs[opt.key] ?? false;
+      acc[opt.key] = prefs[opt.key] ?? true;
       return acc;
     }, {}));
     // eslint-disable-next-line react-hooks/exhaustive-deps
