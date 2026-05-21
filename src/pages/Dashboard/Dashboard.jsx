@@ -1,5 +1,5 @@
 import { useApp } from '../../context/AppContext';
-import { Users, DollarSign, ClipboardCheck, Package, Ship as ShipIcon, ArrowDownToLine, ArrowUpFromLine, RotateCcw, Eye, Edit, Check, X, CheckCircle, XCircle } from 'lucide-react';
+import { Users, DollarSign, ClipboardCheck, Package, Ship as ShipIcon, ArrowDownToLine, ArrowUpFromLine, RotateCcw, Eye, Edit, Check, X, CheckCircle, XCircle, Plus, KeyRound } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import StatCard from '../../components/ui/StatCard';
 import Card from '../../components/ui/Card';
@@ -68,6 +68,21 @@ function formatIDRCompact(value) {
   return `Rp ${(value / 1000).toFixed(1)}K`;
 }
 
+const ROLE_OPTIONS = [
+  { value: 'admin', label: 'Admin' },
+  { value: 'supervisor', label: 'Supervisor' },
+  { value: 'staff', label: 'Staff' },
+];
+
+const emptyUserForm = {
+  email: '',
+  password: '',
+  name: '',
+  role: 'staff',
+  department: '',
+  status: 'active',
+};
+
 function AdminDashboard() {
   const { addToast, globalSearch, setGlobalSearch } = useApp();
   const [userData, setUserData] = useState([]);
@@ -78,6 +93,20 @@ function AdminDashboard() {
   const [actingId, setActingId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Create / Edit modal state.
+  const [showForm, setShowForm] = useState(false);
+  const [formEditId, setFormEditId] = useState(null);
+  const [userForm, setUserForm] = useState(emptyUserForm);
+  const [saving, setSaving] = useState(false);
+
+  // View detail modal.
+  const [viewUser, setViewUser] = useState(null);
+
+  // Reset password modal.
+  const [resetTarget, setResetTarget] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [resetting, setResetting] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
@@ -147,6 +176,99 @@ function AdminDashboard() {
     }
   };
 
+  // --- Create / Edit form ---
+  const openCreateForm = () => {
+    setUserForm(emptyUserForm);
+    setFormEditId(null);
+    setShowForm(true);
+  };
+
+  const openEditForm = (user) => {
+    setUserForm({
+      email: user.email ?? '',
+      password: '',
+      name: user.name ?? '',
+      role: user.role ?? 'staff',
+      department: user.department ?? '',
+      status: user.status ?? 'active',
+    });
+    setFormEditId(user.id);
+    setShowForm(true);
+  };
+
+  const closeForm = () => {
+    if (saving) return;
+    setShowForm(false);
+    setUserForm(emptyUserForm);
+    setFormEditId(null);
+  };
+
+  const setField = (key, value) => setUserForm(f => ({ ...f, [key]: value }));
+
+  const submitForm = async () => {
+    const name = userForm.name.trim();
+    const email = userForm.email.trim().toLowerCase();
+    const role = userForm.role;
+    if (!name) return addToast('Nama wajib diisi', 'error');
+    if (!formEditId) {
+      if (!email || !email.includes('@')) return addToast('Email tidak valid', 'error');
+      if (userForm.password.length < 6) return addToast('Password minimal 6 karakter', 'error');
+    }
+    if (!role) return addToast('Peran wajib dipilih', 'error');
+
+    setSaving(true);
+    try {
+      if (formEditId) {
+        const payload = {
+          name,
+          role,
+          department: userForm.department.trim() || undefined,
+          status: userForm.status || undefined,
+        };
+        await usersApi.update(formEditId, payload);
+        addToast('Pengguna berhasil diperbarui', 'success');
+      } else {
+        const payload = {
+          email,
+          password: userForm.password,
+          name,
+          role,
+          department: userForm.department.trim() || undefined,
+          status: userForm.status || undefined,
+        };
+        await usersApi.create(payload);
+        addToast('Pengguna berhasil ditambahkan', 'success');
+      }
+      closeForm();
+      await refresh();
+    } catch (err) {
+      addToast(err instanceof ApiError ? err.message : 'Gagal menyimpan pengguna', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // --- Reset password ---
+  const openResetPw = (user) => {
+    setResetTarget(user);
+    setNewPassword('');
+  };
+
+  const submitResetPw = async () => {
+    if (!resetTarget) return;
+    if (newPassword.length < 6) return addToast('Password minimal 6 karakter', 'error');
+    setResetting(true);
+    try {
+      await usersApi.resetPassword(resetTarget.id, newPassword);
+      addToast(`Password ${resetTarget.name} berhasil direset`, 'success');
+      setResetTarget(null);
+    } catch (err) {
+      addToast(err instanceof ApiError ? err.message : 'Gagal mereset password', 'error');
+    } finally {
+      setResetting(false);
+    }
+  };
+
   const userColumns = [
     { header: 'Nama', accessor: 'name', render: (r) => (
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -168,8 +290,9 @@ function AdminDashboard() {
     { header: 'Login Terakhir', accessor: 'lastLoginAt', render: (r) => r.lastLoginAt ? new Date(r.lastLoginAt).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '—' },
     { header: 'Aksi', sortable: false, render: (r) => (
       <div style={{ display: 'flex', gap: 4 }}>
-        <button className="btn-icon" title="Lihat detail"><Eye size={15} /></button>
-        <button className="btn-icon" title="Edit"><Edit size={15} /></button>
+        <button className="btn-icon" title="Lihat detail" onClick={() => setViewUser(r)}><Eye size={15} /></button>
+        <button className="btn-icon" title="Edit" onClick={() => openEditForm(r)}><Edit size={15} /></button>
+        <button className="btn-icon" title="Reset Password" onClick={() => openResetPw(r)}><KeyRound size={15} /></button>
         <button
           className="btn-icon"
           title="Hapus"
@@ -184,7 +307,13 @@ function AdminDashboard() {
 
   return (
     <>
-      <div className="page-header"><h1 className="page-title">Dashboard Admin Sistem</h1><p className="page-subtitle">Kelola pengguna, peran, dan konfigurasi sistem</p></div>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 className="page-title">Dashboard Admin Sistem</h1>
+          <p className="page-subtitle">Kelola pengguna, peran, dan konfigurasi sistem</p>
+        </div>
+        <Button variant="primary" icon={Plus} onClick={openCreateForm}>Tambah Pengguna</Button>
+      </div>
       <div className="stats-grid-3">
         <StatCard icon={Users} label="Total Pengguna Aktif" value={userData.filter(u => u.status === 'active').length} color="primary" trendLabel="dari semua pengguna" />
         <StatCard icon={Package} label="Total Material" value={summary?.materialCount ?? '—'} color="info" trendLabel="Item di katalog" />
@@ -224,6 +353,122 @@ function AdminDashboard() {
         </div>
       </Card>
 
+      {/* Create / Edit User Modal */}
+      <Modal
+        isOpen={showForm}
+        onClose={closeForm}
+        title={formEditId ? 'Ubah Pengguna' : 'Tambah Pengguna Baru'}
+        size="md"
+        footer={(
+          <>
+            <Button variant="secondary" onClick={closeForm} disabled={saving}>Batal</Button>
+            <Button variant="primary" onClick={submitForm} disabled={saving}>
+              {saving ? 'Menyimpan...' : formEditId ? 'Simpan Perubahan' : 'Simpan'}
+            </Button>
+          </>
+        )}
+      >
+        <div className="request-form">
+          <div className="form-grid">
+            {!formEditId && (
+              <div className="form-group">
+                <label>Email <span className="required">*</span></label>
+                <input type="email" value={userForm.email} onChange={e => setField('email', e.target.value)} placeholder="user@shipyard.co.id" />
+              </div>
+            )}
+            {formEditId && (
+              <div className="form-group">
+                <label>Email</label>
+                <input type="email" value={userForm.email} disabled />
+                <span className="text-xs text-muted">Email tidak bisa diubah</span>
+              </div>
+            )}
+            <div className="form-group">
+              <label>Nama Lengkap <span className="required">*</span></label>
+              <input type="text" value={userForm.name} onChange={e => setField('name', e.target.value)} placeholder="Nama lengkap" />
+            </div>
+            {!formEditId && (
+              <div className="form-group">
+                <label>Password <span className="required">*</span></label>
+                <input type="password" value={userForm.password} onChange={e => setField('password', e.target.value)} placeholder="Minimal 6 karakter" />
+              </div>
+            )}
+            <div className="form-group">
+              <label>Peran <span className="required">*</span></label>
+              <select value={userForm.role} onChange={e => setField('role', e.target.value)}>
+                {ROLE_OPTIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Departemen</label>
+              <input type="text" value={userForm.department} onChange={e => setField('department', e.target.value)} placeholder="Engineering, Produksi, dll" />
+            </div>
+            <div className="form-group">
+              <label>Status</label>
+              <select value={userForm.status} onChange={e => setField('status', e.target.value)}>
+                <option value="active">Aktif</option>
+                <option value="inactive">Nonaktif</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* View User Detail Modal */}
+      <Modal
+        isOpen={!!viewUser}
+        onClose={() => setViewUser(null)}
+        title="Detail Pengguna"
+        size="sm"
+        footer={<Button variant="secondary" onClick={() => setViewUser(null)}>Tutup</Button>}
+      >
+        {viewUser && (
+          <div className="user-detail-view">
+            <div style={{ textAlign: 'center', marginBottom: 'var(--space-4)' }}>
+              <div className="header-avatar" style={{ width: 56, height: 56, fontSize: 18, margin: '0 auto var(--space-3)' }}>
+                {viewUser.avatar || viewUser.name?.split(' ').map(s => s[0]).slice(0, 2).join('')}
+              </div>
+              <h3 style={{ margin: 0, fontWeight: 600 }}>{viewUser.name}</h3>
+              <span className="text-sm text-muted">{viewUser.email}</span>
+            </div>
+            <div className="user-detail-rows">
+              <div className="user-detail-row"><span className="text-muted">Peran</span><Badge variant={viewUser.role === 'admin' ? 'info' : viewUser.role === 'supervisor' ? 'warning' : 'default'}>{viewUser.role}</Badge></div>
+              <div className="user-detail-row"><span className="text-muted">Departemen</span><span>{viewUser.department || '—'}</span></div>
+              <div className="user-detail-row"><span className="text-muted">Status</span><Badge variant={viewUser.status === 'active' ? 'success' : 'danger'}>{viewUser.status}</Badge></div>
+              <div className="user-detail-row"><span className="text-muted">Login Terakhir</span><span>{viewUser.lastLoginAt ? new Date(viewUser.lastLoginAt).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) : '—'}</span></div>
+              <div className="user-detail-row"><span className="text-muted">Terdaftar</span><span>{viewUser.createdAt ? new Date(viewUser.createdAt).toLocaleDateString('id-ID') : '—'}</span></div>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Reset Password Modal */}
+      <Modal
+        isOpen={!!resetTarget}
+        onClose={() => !resetting && setResetTarget(null)}
+        title="Reset Password"
+        size="sm"
+        footer={(
+          <>
+            <Button variant="secondary" onClick={() => setResetTarget(null)} disabled={resetting}>Batal</Button>
+            <Button variant="primary" onClick={submitResetPw} disabled={resetting}>
+              {resetting ? 'Mereset...' : 'Reset Password'}
+            </Button>
+          </>
+        )}
+      >
+        {resetTarget && (
+          <div>
+            <p>Reset password untuk <strong>{resetTarget.name}</strong> ({resetTarget.email})</p>
+            <div className="form-group" style={{ marginTop: 'var(--space-3)' }}>
+              <label>Password Baru <span className="required">*</span></label>
+              <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Minimal 6 karakter" />
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
       <Modal
         isOpen={!!deleteTarget}
         onClose={() => !deleting && setDeleteTarget(null)}

@@ -11,6 +11,16 @@
 .tool-card-action { margin-top: auto; padding-top: var(--space-3); border-top: 1px solid var(--color-border); }
 .tool-card-action .btn { width: 100%; }
 
+/* Admin action icons on tool card header */
+.tool-admin-actions { display: flex; gap: 2px; }
+.tool-admin-actions .btn-icon { padding: 4px; border-radius: var(--radius-md); color: var(--color-text-muted); transition: color var(--transition-base), background var(--transition-base); }
+.tool-admin-actions .btn-icon:hover { color: var(--color-text-primary); background: var(--color-bg-hover); }
+
+/* Action row inside card (primary action + admin secondary action) */
+.tool-action-row { display: flex; gap: 6px; align-items: center; }
+.tool-action-row .btn:first-child { flex: 1; }
+.tool-action-row .btn:not(:first-child) { width: auto; flex-shrink: 0; }
+
 @media (max-width: 768px) {
   .tools-toolbar {
     flex-direction: column;

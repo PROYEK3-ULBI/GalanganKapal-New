@@ -58,3 +58,9 @@
   font-size: var(--text-sm);
   text-align: center;
 }
+
+/* User detail view modal */
+.user-detail-rows { display: flex; flex-direction: column; gap: 0; }
+.user-detail-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--color-border); font-size: var(--text-sm); }
+.user-detail-row:last-child { border-bottom: none; }
+
